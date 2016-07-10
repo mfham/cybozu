@@ -18,6 +18,10 @@ Route::get('/home', [
     'as' => 'home',
     'uses' => 'IndexController@index'
 ]);
+Route::post('/result', [
+    'as' => 'result',
+    'uses' => 'IndexController@result'
+]);
 
 /*
 |--------------------------------------------------------------------------
