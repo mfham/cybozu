@@ -12,18 +12,19 @@ use App\Cybozu;
 class IndexController extends Controller
 {
     //
-    public function index() {
+    public function index(Request $request) {
+        $cybozuValue = $request->cookie('CBSESSID');
         return view('welcome');
     }
     public function result(Request $request) {
         $name = $request->input('username');
         $password = $request->input('password');
         $cybozu = new Cybozu();
-        if ($cybozu->UtilLogin($name, $password)) {
+        if ($cybozuValue = $cybozu->UtilLogin($name, $password)) {
             // success
         } else {
             // error
         }
-        return view('welcome2');
+        return response()->view('welcome2')->withCookie('CBSESSID', $cybozuValue, 5);
     }
 }

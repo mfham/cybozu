@@ -10,12 +10,13 @@ class Cybozu extends SoapClient
      * specify cybozu wsdl
      */
     public function __construct() {
-        $wsdl = 'http://192.168.56.201/cgi-bin/mfham/grn.cgi?WSDL';
+        $this->wsdl = 'http://192.168.56.201/cgi-bin/mfham/grn.cgi?WSDL';
+        $this->ns = 'http://www.w3.org/2003/05/soap-envelope';
         $opts = array(
-#            'trace' => 1,
+            'trace' => 1,
             'soap_version' => SOAP_1_2
         );
-        return parent::__construct($wsdl, $opts);
+        return parent::__construct($this->wsdl, $opts);
     }
 
     /**
@@ -35,10 +36,9 @@ class Cybozu extends SoapClient
        $expiresHeader->Created = date("c");
        $expiresHeader->Expires = date("c", strtotime("+7 day"));
        $headers = array();
-       $ns = 'http://www.w3.org/2003/05/soap-envelope';
-       $headers[] = new \SOAPHeader($ns, 'Action', $apiName, true);
-       $headers[] = new \SOAPHeader($ns, 'Security', '', true);
-       $headers[] = new \SOAPHeader($ns, 'Timestamp', $expiresHeader, true);
+       $headers[] = new \SOAPHeader($this->ns, 'Action', $apiName, true);
+       $headers[] = new \SOAPHeader($this->ns, 'Security', '', true);
+       $headers[] = new \SOAPHeader($this->ns, 'Timestamp', $expiresHeader, true);
        parent::__setSoapHeaders($headers);
     }
     /**
@@ -54,13 +54,11 @@ class Cybozu extends SoapClient
         $p = new \SoapVar($params, SOAP_ENC_OBJECT);
         try {
             $result = parent::UtilLogin($p);
-#            # set cookie
-#            # $session_id = explode('=', explode(';', $result->cookie)[0])[1];
+            $cybozuValue = explode('=', explode(';', $result->cookie)[0])[1];
         } catch (\SoapFault $e){
-#            var_dump($e);
             return false;
         }
 
-        return true;
+        return $cybozuValue;
     }
 }
