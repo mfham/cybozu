@@ -13,8 +13,15 @@ class IndexController extends Controller
 {
     //
     public function index(Request $request) {
-        $cybozuValue = $request->cookie('CBSESSID');
-        return view('welcome');
+        $cybozuSessionId = $request->cookie('CBSESSID');
+        $cybozu = new Cybozu($cybozuSessionId);
+        if ($cybozu->isLogin()) {
+            # logged in
+            return view('home');
+        } else {
+            # not login
+            return view('welcome');
+        }
     }
     public function result(Request $request) {
         $name = $request->input('username');
@@ -22,9 +29,10 @@ class IndexController extends Controller
         $cybozu = new Cybozu();
         if ($cybozuValue = $cybozu->UtilLogin($name, $password)) {
             // success
+            return response()->view('home')->withCookie('CBSESSID', $cybozuValue, 5);
         } else {
             // error
+            return view('welcome');
         }
-        return response()->view('welcome2')->withCookie('CBSESSID', $cybozuValue, 5);
     }
 }
