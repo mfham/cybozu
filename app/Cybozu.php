@@ -34,6 +34,9 @@ class Cybozu extends SoapClient
         return parent::__doRequest($request, $location, $action, $version, $one_way);
     }
 
+    /**
+     * Set Soap Header
+     */
     public function setHeader($apiName) {
        $expiresHeader = new \stdClass();
        $expiresHeader->Created = date("c");
@@ -44,6 +47,14 @@ class Cybozu extends SoapClient
        $headers[] = new \SOAPHeader($this->ns, 'Timestamp', $expiresHeader, true);
        parent::__setSoapHeaders($headers);
     }
+
+    /**
+     *
+     */
+    public function setCybozuCookie($cybozuSessionId) {
+        parent::__setCookie('CBSESSID', $cybozuSessionId);
+    }
+
     /**
      * Login
      */

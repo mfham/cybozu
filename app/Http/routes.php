@@ -14,13 +14,13 @@
 #Route::get('/home', function () {
 #    return view('welcome');
 #});
-Route::get('/home', [
-    'as' => 'home',
-    'uses' => 'IndexController@index'
+Route::get('/login', [
+    'as' => 'login',
+    'uses' => 'IndexController@login'
 ]);
-Route::post('/result', [
-    'as' => 'result',
-    'uses' => 'IndexController@result'
+Route::match(['get', 'post'], '/home', [
+    'as' => 'home',
+    'uses' => 'IndexController@home'
 ]);
 
 /*

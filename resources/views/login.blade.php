@@ -4,7 +4,7 @@
         <title>Laravel</title>
     </head>
     <body>
-{!! Form::open(array('url' => '/result', 'method' => 'post')) !!}
+{!! Form::open(array('url' => '/home', 'method' => 'post')) !!}
 id: {!! Form::text('username'); !!}
 pass: {!! Form::text('password'); !!}
 {!! Form::submit('Click Me!') !!}
