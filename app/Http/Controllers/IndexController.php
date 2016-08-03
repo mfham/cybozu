@@ -35,6 +35,11 @@ class IndexController extends Controller
 
             if ($cybozu->isLogin()) {
                 # logged in
+
+                #### test
+                $schedule = $cybozu->ScheduleSearchFreeTimes(array('6', '67'), '2016-08-02T00:00:00', '2016-08-06T20:00:00', 60, $searchCondition = 'and');
+                var_dump($schedule);
+                ####
                 return view('home');
             } else {
                 # not login

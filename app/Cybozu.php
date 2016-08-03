@@ -30,6 +30,10 @@ class Cybozu extends SoapClient
         $request = preg_replace('/<\/env:Action/', '</Action', $request);
         $request = preg_replace('/<env:Timestamp/', '<Timestamp', $request);
         $request = preg_replace('/<\/env:Timestamp/', '</Timestamp', $request);
+        $request = preg_replace('/<ns1:/', '<', $request);
+        $request = preg_replace('/<\/ns1:/', '</', $request);
+        $request = preg_replace('/<ns2:/', '<', $request);
+        $request = preg_replace('/<\/ns2:/', '</', $request);
 
         return parent::__doRequest($request, $location, $action, $version, $one_way);
     }
@@ -38,14 +42,18 @@ class Cybozu extends SoapClient
      * Set Soap Header
      */
     public function setHeader($apiName) {
-       $expiresHeader = new \stdClass();
-       $expiresHeader->Created = date("c");
-       $expiresHeader->Expires = date("c", strtotime("+7 day"));
-       $headers = array();
-       $headers[] = new \SOAPHeader($this->ns, 'Action', $apiName, true);
-       $headers[] = new \SOAPHeader($this->ns, 'Security', '', true);
-       $headers[] = new \SOAPHeader($this->ns, 'Timestamp', $expiresHeader, true);
-       parent::__setSoapHeaders($headers);
+        # reset soap header
+        parent::__setSoapHeaders();
+
+        # set new soap header
+        $expiresHeader = new \stdClass();
+        $expiresHeader->Created = date("c");
+        $expiresHeader->Expires = date("c", strtotime("+7 day"));
+        $headers = array();
+        $headers[] = new \SOAPHeader($this->ns, 'Action', $apiName, true);
+        $headers[] = new \SOAPHeader($this->ns, 'Security', '', true);
+        $headers[] = new \SOAPHeader($this->ns, 'Timestamp', $expiresHeader, true);
+        parent::__setSoapHeaders($headers);
     }
 
     /**
@@ -61,13 +69,13 @@ class Cybozu extends SoapClient
     public function UtilLogin($loginName, $password) {
         $this->setHeader('UtilLogin');
 
-        $params = array();
+        $params = new \StdClass();
         # ToDo: validation
-        $params[] = new \SoapVar($loginName, XSD_STRING, null, null, 'login_name');
-        $params[] = new \SoapVar($password, XSD_STRING, null, null, 'password');
-        $p = new \SoapVar($params, SOAP_ENC_OBJECT);
+        $params->login_name = $loginName;
+        $params->password = $password;
+
         try {
-            $result = parent::UtilLogin($p);
+            $result = parent::UtilLogin($params);
             $cybozuSessionId = explode('=', explode(';', $result->cookie)[0])[1];
         } catch (\SoapFault $e){
             return false;
@@ -91,6 +99,32 @@ class Cybozu extends SoapClient
     public function isLogin() {
         try {
             return $this->UtilGetLoginUserId();
+        } catch (\SoapFault $e) {
+            return false;
+        }
+    }
+
+    /**
+     * Get free schedule
+     *
+     * $searchTime minutes
+     */
+    public function ScheduleSearchFreeTimes($memberIds, $startDate, $endDate, $searchTime, $searchCondition = 'and') {
+        $this->setHeader('ScheduleSearchFreeTimes');
+
+        $params = new \StdClass();
+        $params->search_time = date('H:i:s', $searchTime * 60);
+        $params->search_condition = $searchCondition;
+        foreach ($memberIds as $v) {
+            $params->member[] = array('user' => array('id' => $v));
+        }
+        # ex. 'start' => '2016-08-02T00:00:00' (UTC)
+        $params->candidate = array(
+            'start' => $startDate,
+            'end' => $endDate
+        );
+        try {
+            return parent::ScheduleSearchFreeTimes($params);
         } catch (\SoapFault $e) {
             return false;
         }
