@@ -35,11 +35,6 @@ class IndexController extends Controller
 
             if ($cybozu->isLogin()) {
                 # logged in
-
-                #### test
-                $schedule = $cybozu->ScheduleSearchFreeTimes(array('6', '67'), '2016-08-02T00:00:00', '2016-08-06T20:00:00', 60, $searchCondition = 'and');
-                var_dump($schedule);
-                ####
                 return view('home');
             } else {
                 # not login
@@ -60,5 +55,40 @@ class IndexController extends Controller
             }
 
         }
+    }
+
+    public function search(Request $request) {
+        $cybozu = new Cybozu();
+        $cybozuSessionId = $request->cookie('CBSESSID');
+        $cybozu->setCybozuCookie($cybozuSessionId);
+
+        if (!$cybozu->isLogin()) {
+            return redirect()->route('login');
+        }
+
+        $userIds = $request->input('user_id');
+        $schedule = $cybozu->ScheduleSearchFreeTimes(array(6,67), '2016-08-02T00:00:00', '2016-08-06T20:00:00', 60, $searchCondition = 'and');
+#        var_dump(json_decode(json_encode($schedule), true));
+
+        try {
+#            $r = $cybozu->ScheduleGetEventsByTarget('2016-08-02T00:00:00', '2016-08-06T20:00:00', '15');
+            $r = $cybozu->ScheduleGetFacilitiesById('15');
+            var_dump($r);
+            var_dump('success');
+            var_dump($cybozu->__getLastRequest());
+#            var_dump($cybozu->__getLastRequestHeaders());
+#            var_dump($cybozu->__getLastResponse());
+#            var_dump($cybozu->__getLastResponseHeaders());
+            exit;
+        } catch (\SoapFault $e) {
+            var_dump('fail');
+            var_dump($cybozu->__getLastRequest());
+#            var_dump($cybozu->__getLastRequestHeaders());
+#            var_dump($cybozu->__getLastResponse());
+#            var_dump($cybozu->__getLastResponseHeaders());
+        }
+        #var_dump($r);
+
+        return view('result', ['schedule' => $schedule]);
     }
 }

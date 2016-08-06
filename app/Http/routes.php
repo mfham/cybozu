@@ -22,6 +22,10 @@ Route::match(['get', 'post'], '/home', [
     'as' => 'home',
     'uses' => 'IndexController@home'
 ]);
+Route::match(['get', 'post'], '/search', [
+    'as' => 'search',
+    'uses' => 'IndexController@search'
+]);
 
 /*
 |--------------------------------------------------------------------------
