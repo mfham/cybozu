@@ -9,5 +9,6 @@ you can search
 user_id: {!! Form::text('user_id'); !!}
 {!! Form::submit('Click Me!') !!}
 {!! Form::close() !!}
-    </body>
+
+result
 </html>

@@ -53,7 +53,8 @@ class Cybozu extends SoapClient
         $headers[] = new \SOAPHeader($this->ns, 'Action', $apiName, true);
         $headers[] = new \SOAPHeader($this->ns, 'Security', '', true);
         $headers[] = new \SOAPHeader($this->ns, 'Timestamp', $expiresHeader, true);
-        parent::__setSoapHeaders($headers);
+
+        return parent::__setSoapHeaders($headers);
     }
 
     /**
@@ -128,5 +129,54 @@ class Cybozu extends SoapClient
         } catch (\SoapFault $e) {
             return false;
         }
+    }
+
+    /**
+     * Get user information by id
+     */
+    public function BaseGetUsersById($userId) {
+        $this->setHeader('BaseGetUsersById');
+
+        $params = new \StdClass();
+        $params->user_id = $userId;
+
+        try {
+            return parent::BaseGetUsersById($params);
+        } catch (\SoapFault $e) {
+            return false;
+        }
+    }
+
+    /**
+     * Get schedule by id
+     * return information if someone use it
+     * return empty if someone doesn't use it
+     */
+    public function ScheduleGetEventsByTarget($startDate, $endDate, $facilityId) {
+        $this->setHeader('ScheduleGetEventsByTarget');
+
+        $params = new \StdClass();
+        # ex. 'start' => '2016-08-02T00:00:00' (UTC)
+        $params->start = $startDate;
+        $params->end = $endDate;
+        $params->facility = array('id' => $facilityId);
+
+        try {
+            return parent::ScheduleGetEventsByTarget($params);
+        } catch (\SoapFault $e) {
+            return false;
+        }
+    }
+
+    /**
+     * Get facility information
+     */
+    public function ScheduleGetFacilitiesById($id) {
+        $this->setHeader('ScheduleGetFacilitiesById');
+
+        $params = new \StdClass();
+        $params->facility_id = $id;
+
+        return parent::ScheduleGetFacilitiesById($params);
     }
 }
