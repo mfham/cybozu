@@ -2,6 +2,7 @@
 
 namespace App;
 
+use App\Common;
 use SoapClient;
 
 class Cybozu extends SoapClient
@@ -91,7 +92,7 @@ class Cybozu extends SoapClient
     public function UtilGetLoginUserId() {
         $this->setHeader('UtilGetLoginUserId');
 
-        return parent::UtilGetLoginUserId();
+        return Common::convertToArray(parent::UtilGetLoginUserId());
     }
 
     /**
@@ -125,7 +126,7 @@ class Cybozu extends SoapClient
             'end' => $endDate
         );
         try {
-            return parent::ScheduleSearchFreeTimes($params);
+            return Common::convertToArray(parent::ScheduleSearchFreeTimes($params));
         } catch (\SoapFault $e) {
             return false;
         }
@@ -141,7 +142,7 @@ class Cybozu extends SoapClient
         $params->user_id = $userId;
 
         try {
-            return parent::BaseGetUsersById($params);
+            return Common::convertToArray(parent::BaseGetUsersById($params));
         } catch (\SoapFault $e) {
             return false;
         }
@@ -162,7 +163,7 @@ class Cybozu extends SoapClient
         $params->facility = array('id' => $facilityId);
 
         try {
-            return parent::ScheduleGetEventsByTarget($params);
+            return Common::convertToArray(parent::ScheduleGetEventsByTarget($params));
         } catch (\SoapFault $e) {
             return false;
         }
@@ -177,6 +178,37 @@ class Cybozu extends SoapClient
         $params = new \StdClass();
         $params->facility_id = $id;
 
-        return parent::ScheduleGetFacilitiesById($params);
+        try {
+            return Common::convertToArray(parent::ScheduleGetFacilitiesById($params));
+        } catch (\SoapFault $e) {
+            return false;
+        }
+    }
+
+    /**
+     * Get OK schedule
+     */
+    public function getEmptySchedule($weeks, $minutes, $userIds, $facilityIds) {
+        # UTC
+        # 現在日時を繰り上げた時間を開始時間
+        # ToDo: フォームで開始時間を指定させる
+        $currentDate = date("Y-m-d\TH:00:00");
+        $endDate = date('c', strtotime("$weeks week"));
+
+        $emptySchedule = array();
+
+        # スケジュール取得
+        # そのスケジュールを施設と照らし合わせる
+        # そして日付を最後のものをスタートとしてループ
+        $freeSchedule = $this->ScheduleSearchFreeTimes(array($userIds), $currentDate, $endDate, $minutes, 'and');
+        foreach ($freeSchedule['candidate'] as $date) {
+            $result = $this->ScheduleGetEventsByTarget($date['start'], $date['end'], $facilityIds);
+
+            if (empty($result)) {
+                $emptySchedule[] = array('start' => $date['start'], 'end' => $date['end']);
+            }
+        }
+
+        return $emptySchedule;
     }
 }

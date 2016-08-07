@@ -6,7 +6,10 @@
     <body>
 you can search
 {!! Form::open(array('url' => '/search', 'method' => 'post')) !!}
-user_id: {!! Form::text('user_id'); !!}
+week: {!! Form::text('weeks'); !!}
+minutes: {!! Form::text('minutes'); !!}
+user_ids: {!! Form::text('user_ids'); !!}
+facility_ids: {!! Form::text('facility_ids'); !!}
 {!! Form::submit('Click Me!') !!}
 {!! Form::close() !!}
     </body>
