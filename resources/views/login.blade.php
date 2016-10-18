@@ -6,7 +6,7 @@
     <body>
 {!! Form::open(array('url' => '/home', 'method' => 'post')) !!}
 id: {!! Form::text('username'); !!}
-pass: {!! Form::text('password'); !!}
+pass: {!! Form::password('password'); !!}
 {!! Form::submit('Click Me!') !!}
 {!! Form::close() !!}
     </body>
