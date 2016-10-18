@@ -21,12 +21,15 @@ Route::get('/login', [
 Route::match(['get', 'post'], '/home', [
     'as' => 'home',
     'uses' => 'IndexController@home'
-]);
+#]);
+])->middleware('login');
+
+
 #Route::match(['get', 'post'], '/search', [
 Route::post('/search', [
     'as' => 'search',
     'uses' => 'IndexController@search'
-]);
+])->middleware('login');
 
 /*
 |--------------------------------------------------------------------------

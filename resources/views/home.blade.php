@@ -4,7 +4,6 @@
         <title>Laravel</title>
     </head>
     <body>
-you can search
 {!! Form::open(array('url' => '/search', 'method' => 'post')) !!}
 week: {!! Form::text('weeks'); !!}
 minutes: {!! Form::text('minutes'); !!}
