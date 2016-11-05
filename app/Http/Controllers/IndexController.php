@@ -23,7 +23,7 @@ class IndexController extends Controller
         $weeks = $request->input('weeks');
         $minutes = $request->input('minutes');
         $userIds = $request->input('user_ids');
-        $facilityIds = $request->input('facility_ids');
+        $facilityIds = $request->input('facility');
 
         $schedule = $cybozu->getEmptySchedule($weeks, $minutes, $userIds, $facilityIds);
 #        $schedule = $cybozu->ScheduleSearchFreeTimes(array(6,67), '2016-08-02T00:00:00', '2016-08-06T20:00:00', 60, $searchCondition = 'and');

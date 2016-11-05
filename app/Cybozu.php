@@ -163,6 +163,7 @@ class Cybozu extends SoapClient
         $params->facility = array('id' => $facilityId);
 
         try {
+            # 変なidを指定しても結果が帰ってきてしまう
             return Common::convertToArray(parent::ScheduleGetEventsByTarget($params));
         } catch (\SoapFault $e) {
             return false;
@@ -197,15 +198,28 @@ class Cybozu extends SoapClient
 
         $emptySchedule = array();
 
-        # スケジュール取得
-        # そのスケジュールを施設と照らし合わせる
-        # そして日付を最後のものをスタートとしてループ
-        $freeSchedule = $this->ScheduleSearchFreeTimes(array($userIds), $currentDate, $endDate, $minutes, 'and');
-        foreach ($freeSchedule['candidate'] as $date) {
-            $result = $this->ScheduleGetEventsByTarget($date['start'], $date['end'], $facilityIds);
+        # 1. user全員の共有空き時間取得
+        # 2. 1の時間をループ。その時間に指定施設が空いているか確認。
+        #    空いていたら同じ時間帯の他の施設はチェックしない。
 
-            if (empty($result)) {
-                $emptySchedule[] = array('start' => $date['start'], 'end' => $date['end']);
+        # 全員が空いている時間帯
+        $freeSchedule = $this->ScheduleSearchFreeTimes(array($userIds), $currentDate, $endDate, $minutes, 'and');
+
+        # 直近の時間帯からチェック
+        foreach ($freeSchedule['candidate'] as $date) {
+            # ひとつでも空いていたら、その時間帯はそれでチェック終了
+            foreach ($facilityIds as $facilityId) {
+                $result = $this->ScheduleGetEventsByTarget($date['start'], $date['end'], $facilityId);
+                if (empty($result)) {
+                    $emptySchedule[] = array(
+                        'start' => $date['start'], # string
+                        'end' => $date['end'],
+                        'facilityId' => $facilityId,
+                        'start_jst' => date("Y-m-d\TH:00:00", strtotime('+9 hour', strtotime($date['start']))),
+                        'end_jst' => date("Y-m-d\TH:00:00", strtotime('+9 hour', strtotime($date['end'])))
+                    );
+                    break;
+                }
             }
         }
 
