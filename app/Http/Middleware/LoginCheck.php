@@ -26,7 +26,7 @@ class LoginCheck
             if ($cybozuValue) {
                 # success
                 session(['cybozu' => $cybozu]);
-                return response()->view('home')->withCookie('CBSESSID', $cybozuValue, 5);
+                return response()->view('home')->withCookie('CBSESSID', $cybozuValue, 60);
             } else {
                 # error
                 # ToDo: show error message

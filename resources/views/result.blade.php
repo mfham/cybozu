@@ -5,14 +5,21 @@
     </head>
     <body>
 {!! Form::open(array('url' => '/search', 'method' => 'post')) !!}
-week: {!! Form::text('weeks'); !!}
-minutes: {!! Form::text('minutes'); !!}
-user_ids: {!! Form::text('user_ids'); !!}
 <p>
-facility:
-{{Form::checkbox('facility[]', 4, false)}}第一会議室
-{{Form::checkbox('facility[]', 5, false)}}第二会議室
-{{Form::checkbox('facility[]', 6, false)}}セミナールーム
+weeks:
+@include('week')
+</p>
+<p>
+minutes:
+@include('minute')
+</p>
+<p>
+users:
+@include('user')
+</p>
+<p>
+facilities:
+@include('facility')
 </p>
 {!! Form::submit('Click Me!') !!}
 {!! Form::close() !!}
