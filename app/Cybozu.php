@@ -190,39 +190,104 @@ class Cybozu extends SoapClient
      * Get OK schedule
      */
     public function getEmptySchedule($weeks, $minutes, $userIds, $facilityIds) {
-        # UTC
-        # 現在日時を繰り上げた時間を開始時間
-        # ToDo: フォームで開始時間を指定させる
-        $currentDate = date("Y-m-d\TH:00:00");
-        $endDate = date('c', strtotime("$weeks week"));
+        # 全員空いている時間帯の取得
+        $userFreeTime = [];
+        $searchTimeCondition = $this->getSearchTimeCondition($weeks * 7);
+        foreach ($searchTimeCondition as $day) {
+            $tmp = $this->ScheduleSearchFreeTimes($userIds, $day['start'], $day['end'], $minutes, 'and');
+            if (!empty($tmp)) {
+                $userFreeTime[] = $tmp;
+            }
+        }
 
-        $emptySchedule = array();
-
-        # 1. user全員の共有空き時間取得
-        # 2. 1の時間をループ。その時間に指定施設が空いているか確認。
-        #    空いていたら同じ時間帯の他の施設はチェックしない。
-
-        # 全員が空いている時間帯
-        $freeSchedule = $this->ScheduleSearchFreeTimes(array($userIds), $currentDate, $endDate, $minutes, 'and');
-
-        # 直近の時間帯からチェック
-        foreach ($freeSchedule['candidate'] as $date) {
-            # ひとつでも空いていたら、その時間帯はそれでチェック終了
-            foreach ($facilityIds as $facilityId) {
-                $result = $this->ScheduleGetEventsByTarget($date['start'], $date['end'], $facilityId);
-                if (empty($result)) {
-                    $emptySchedule[] = array(
-                        'start' => $date['start'], # string
-                        'end' => $date['end'],
-                        'facilityId' => $facilityId,
-                        'start_jst' => date("Y-m-d\TH:00:00", strtotime('+9 hour', strtotime($date['start']))),
-                        'end_jst' => date("Y-m-d\TH:00:00", strtotime('+9 hour', strtotime($date['end'])))
-                    );
+        # 施設が空いているか検索
+        $emptySchedule = [];
+        $dayMax = 0; # 最大3日分候補を見つける
+        foreach ($userFreeTime as $freeSchedule) {
+            $onedayMax = 0; # 1日最大2件見つける
+            # 直近の時間帯からチェック
+            foreach ($freeSchedule['candidate'] as $date) {
+                # ひとつでも施設が空いていたら、その時間帯はそれでチェック終了
+                foreach ($facilityIds as $facilityId) {
+                    $result = $this->ScheduleGetEventsByTarget($date['start'], $date['end'], $facilityId);
+                    if (empty($result)) {
+                        $emptySchedule[] = array(
+                            'start' => $date['start'], # string
+                            'end' => $date['end'],
+                            'facilityId' => $facilityId,
+                            'start_jst' => date("Y-m-d\TH:i:00", strtotime('+9 hour', strtotime($date['start']))),
+                            'end_jst' => date("Y-m-d\TH:i:00", strtotime('+9 hour', strtotime($date['end'])))
+                        );
+                        $onedayMax++;
+                        break;
+                    }
+                }
+                # 1日で2個空き予定を見つけられたら別日の検索に移る
+                if ($onedayMax == 2) {
                     break;
                 }
+            }
+            if ($onedayMax > 0) {
+                $dayMax++;
+            }
+            # 3日分探したら終了
+            if ($dayMax == 3) {
+                break;
             }
         }
 
         return $emptySchedule;
+    }
+
+    /* 検索対象の時間帯リストを取得する
+     *
+     * @param Integer $dayNumber
+     * @return Array
+     *
+     */
+    public function getSearchTimeCondition($dayNumber) {
+        # UTC
+        # 現在日時を繰り上げた時間を開始時間
+        # ToDo: フォームで開始時間を指定させる
+
+        # 例えば12/02火曜日、1週間なら、02, 03, 04, 05, 08
+
+        # 現在日時を繰り上げた時間を開始時間
+        # ToDo: フォームで開始時間を指定させる
+        # Nは曜日を数字にしたもの。月曜日は1, 日曜日は7
+        list($nowDate, $nowHour, $dayIndex) = explode(" ", date("Y-m-d H N"));
+
+        # ToDo: これだと、09:00JST〜で検索しないと変になる
+        #       また、土日に検索すると変になる.
+        #       検索時の日時が定時内ではなかったり土日だったら次の日(次の月曜日)にする？
+        $dayRange = [];
+        $rupHour = $nowHour + 1;
+
+        $nearStartTime = strtotime("${nowDate} ${rupHour}:00:00"); # 切り上げた一番近い時間
+        $workStartTime = strtotime("${nowDate} 01:00:00");         # 始業時間10時
+        $workEndTime = strtotime("9 hours", $workStartTime);       # 就業時間19時
+
+        # 検索日
+        # 検索した日が土日だと結果に土日が含まれてしまうので除去。もっと綺麗にしたい。
+        if ($dayIndex != 6 && $dayIndex != 7) {
+            $dayRange[] = array(
+                'start' => date('c', $nearStartTime),
+                'end' => date('c', $workEndTime)
+            );
+        }
+
+        # 検索日以降
+        $saturdayIndex = 6 - $dayIndex;
+        $sundayIndex = $saturdayIndex + 1;
+        for ($i = 1; $i < 7; $i++) {
+            if ($i != $saturdayIndex || $i != $sundayIndex) {
+                $dayRange[] = array(
+                    'start' => date('c', strtotime("$i day", $workStartTime)),
+                    'end' => date('c', strtotime("$i day", $workEndTime))
+                );
+            }
+        }
+
+        return $dayRange;
     }
 }
