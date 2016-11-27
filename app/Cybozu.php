@@ -215,8 +215,8 @@ class Cybozu extends SoapClient
                             'start' => $date['start'], # string
                             'end' => $date['end'],
                             'facilityId' => $facilityId,
-                            'start_jst' => date("Y-m-d\TH:00:00", strtotime('+9 hour', strtotime($date['start']))),
-                            'end_jst' => date("Y-m-d\TH:00:00", strtotime('+9 hour', strtotime($date['end'])))
+                            'start_jst' => date("Y-m-d\TH:i:00", strtotime('+9 hour', strtotime($date['start']))),
+                            'end_jst' => date("Y-m-d\TH:i:00", strtotime('+9 hour', strtotime($date['end'])))
                         );
                         $onedayMax++;
                         break;
