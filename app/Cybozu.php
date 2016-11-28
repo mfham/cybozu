@@ -199,11 +199,41 @@ class Cybozu extends SoapClient
                 $userFreeTime[] = $tmp;
             }
         }
+        /** e.g.
+         * $userFreeTime = array(
+         *   0 => array(
+         *     'candidate' => array(
+         *       'start' => '2016-11-28T07:00:00Z',
+         *       'end' => '2016-11-28T08:00:00Z'
+         *     )
+         *   ),
+         *   1 => array(
+         *     'candidate' => array(
+         *       0 => array(
+         *         'start' => '2016-11-28T07:00:00Z',
+         *         'end' => '2016-11-28T08:00:00Z'
+         *       ),
+         *       1 => array(
+         *         'start' => '2016-11-28T07:00:00Z',
+         *         'end' => '2016-11-28T08:00:00Z'
+         *       )
+         *     )
+         *   )
+         * )
+         **/
 
         # 施設が空いているか検索
         $emptySchedule = [];
         $dayMax = 0; # 最大3日分候補を見つける
         foreach ($userFreeTime as $freeSchedule) {
+            # 上記e.g.のようにcandidate値の形式が若干異なっているので、
+            # 処理しやすいよう添字ありの配列に統一する。
+            if (!isset($freeSchedule['candidate'][0])) {
+                $v = $freeSchedule['candidate'];
+                unset($freeSchedule['candidate']);
+                $freeSchedule['candidate'] = array(0 => $v);
+            }
+
             $onedayMax = 0; # 1日最大2件見つける
             # 直近の時間帯からチェック
             foreach ($freeSchedule['candidate'] as $date) {
