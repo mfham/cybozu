@@ -310,7 +310,7 @@ class Cybozu extends SoapClient
         $saturdayIndex = 6 - $dayIndex;
         $sundayIndex = $saturdayIndex + 1;
         for ($i = 1; $i < 7; $i++) {
-            if ($i != $saturdayIndex || $i != $sundayIndex) {
+            if ($i != $saturdayIndex && $i != $sundayIndex) {
                 $dayRange[] = array(
                     'start' => date('c', strtotime("$i day", $workStartTime)),
                     'end' => date('c', strtotime("$i day", $workEndTime))
