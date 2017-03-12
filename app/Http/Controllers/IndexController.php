@@ -20,12 +20,16 @@ class IndexController extends Controller
 
     public function search(Request $request) {
         $cybozu = session('cybozu');
-        $weeks = $request->input('week');
         $minutes = $request->input('minute');
         $userIds = $request->input('user');
         $facilityIds = $request->input('facility');
 
-        $schedule = $cybozu->getEmptySchedule($weeks[0], $minutes[0], $userIds, $facilityIds);
+        $startDate = $request->input('start'); // '2017-03-01' or ''
+        $endDate = $request->input('end');
+        $displayedDay = $request->input('displayedDay');
+        $perDay = $request->input('perDay');
+
+        $schedule = $cybozu->getEmptySchedule($startDate, $endDate, $displayedDay[0], $perDay[0], $minutes[0], $userIds, $facilityIds);
 #        $schedule = $cybozu->ScheduleSearchFreeTimes(array(6,67), '2016-08-02T00:00:00', '2016-08-06T20:00:00', 60, $searchCondition = 'and');
 #        var_dump(json_decode(json_encode($schedule), true));
 

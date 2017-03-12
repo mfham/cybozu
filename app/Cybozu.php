@@ -189,10 +189,10 @@ class Cybozu extends SoapClient
     /**
      * Get OK schedule
      */
-    public function getEmptySchedule($weeks, $minutes, $userIds, $facilityIds) {
+    public function getEmptySchedule($startDate, $endDate, $displayedDay, $perDay, $minutes, $userIds, $facilityIds) {
         # 全員空いている時間帯の取得
         $userFreeTime = [];
-        $searchTimeCondition = $this->getSearchTimeCondition($weeks * 7);
+        $searchTimeCondition = $this->getSearchTimeCondition($startDate, $endDate);
         foreach ($searchTimeCondition as $day) {
             $tmp = $this->ScheduleSearchFreeTimes($userIds, $day['start'], $day['end'], $minutes, 'and');
             if (!empty($tmp)) {
@@ -253,7 +253,7 @@ class Cybozu extends SoapClient
                     }
                 }
                 # 1日で2個空き予定を見つけられたら別日の検索に移る
-                if ($onedayMax == 2) {
+                if ($onedayMax == $perDay) {
                     break;
                 }
             }
@@ -261,7 +261,7 @@ class Cybozu extends SoapClient
                 $dayMax++;
             }
             # 3日分探したら終了
-            if ($dayMax == 3) {
+            if ($dayMax == $displayedDay) {
                 break;
             }
         }
@@ -271,11 +271,10 @@ class Cybozu extends SoapClient
 
     /* 検索対象の時間帯リストを取得する
      *
-     * @param Integer $dayNumber
      * @return Array
      *
      */
-    public function getSearchTimeCondition($dayNumber) {
+    public function getSearchTimeCondition($startDate, $endDate) {
         # UTC
         # 現在日時を繰り上げた時間を開始時間
         # ToDo: フォームで開始時間を指定させる
@@ -293,8 +292,10 @@ class Cybozu extends SoapClient
         $dayRange = [];
         $rupHour = $nowHour + 1;
 
-        $nearStartTime = strtotime("${nowDate} ${rupHour}:00:00"); # 切り上げた一番近い時間
-        $workStartTime = strtotime("${nowDate} 01:00:00");         # 始業時間10時
+        #$nearStartTime = strtotime("${nowDate} ${rupHour}:00:00"); # 切り上げた一番近い時間
+        #$workStartTime = strtotime("${nowDate} 01:00:00");         # 始業時間10時
+        $nearStartTime = strtotime("${startDate} ${rupHour}:00:00"); # 切り上げた一番近い時間
+        $workStartTime = strtotime("${startDate} 01:00:00");         # 始業時間10時
         $workEndTime = strtotime("9 hours", $workStartTime);       # 就業時間19時
 
         # 検索日
