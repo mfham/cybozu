@@ -6,19 +6,27 @@
     <body>
 {!! Form::open(array('url' => '/search', 'method' => 'post')) !!}
 <p>
-weeks:
-@include('week')
+date:</br>
+@include('date')
 </p>
 <p>
-minutes:
+the number of displayed day:</br>
+@include('displayedDay')
+</p>
+<p>
+the number per day:</br>
+@include('perDay')
+</p>
+<p>
+minutes:</br>
 @include('minute')
 </p>
 <p>
-users:
+users:</br>
 @include('user')
 </p>
 <p>
-facilities:
+facilities:</br>
 @include('facility')
 </p>
 {!! Form::submit('Click Me!') !!}
